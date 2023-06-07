@@ -17,6 +17,7 @@ license.workspace = true
 
 [features]
 ftdi = ["probe-rs/ftdi"]
+espflash = ["dep:espflash", "probe-rs/espflash"]
 
 [dependencies]
 probe-rs = { workspace = true }
@@ -53,6 +54,9 @@ time = { version = "0.3", default-features = false, features = [
     "macros",
 ] }
 git-version = "0.3.5"
+
+# Optional
+espflash = { version = "1.7.0", optional = true }
 
 [build-dependencies]
 git-version = "0.3.5"

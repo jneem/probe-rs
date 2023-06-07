@@ -170,6 +170,11 @@ enum Subcommand {
         #[clap(long)]
         chip_erase: bool,
 
+        /// If present, adds an ESP bootloader (for the specified chip name) to the image before flashing it.
+        // If absent, ESP chips will be flashed in direct boot mode.
+        #[clap(long)]
+        esp_bootloader: Option<String>,
+
         /// Disable double-buffering when downloading flash.  If downloading times out, try this option.
         #[clap(long = "disable-double-buffering")]
         disable_double_buffering: bool,
@@ -360,12 +365,14 @@ fn main() -> Result<()> {
             common,
             path,
             chip_erase,
+            esp_bootloader,
             disable_double_buffering,
         } => run::run(
             common,
             &path,
             chip_erase,
             disable_double_buffering,
+            esp_bootloader.as_deref(),
             utc_offset,
         ),
         Subcommand::Erase { common } => erase(&common),
@@ -473,6 +480,9 @@ fn download_program_fast(
         Format::Bin(options) => loader.load_bin_data(&mut file, options),
         Format::Elf => loader.load_elf_data(&mut file),
         Format::Hex => loader.load_hex_data(&mut file),
+        #[cfg(feature = "espflash")]
+        // FIXME: don't hardcode the chip
+        Format::Esp => loader.load_espflash_data(&mut file, espflash::Chip::Esp32c3),
     }?;
 
     run_flash_download(

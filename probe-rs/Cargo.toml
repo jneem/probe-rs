@@ -67,6 +67,7 @@ tracing = { version = "0.1.37", features = ["log"] }
 # optional
 hexdump = { version = "0.1.1", optional = true }
 libftdi1-sys = { version = "1.1.2", optional = true }
+espflash = { version = "1.7.0", optional = true }
 
 # path
 probe-rs-target = { workspace = true }

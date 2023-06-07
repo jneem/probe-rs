@@ -14,6 +14,7 @@ pub fn run(
     path: &str,
     chip_erase: bool,
     disable_double_buffering: bool,
+    esp_bootloader: Option<&str>,
     timestamp_offset: UtcOffset,
 ) -> Result<()> {
     let mut session = common.simple_attach()?;
@@ -24,7 +25,14 @@ pub fn run(
     };
 
     let mut loader = session.target().flash_loader();
-    loader.load_elf_data(&mut file)?;
+    if let Some(chip_name) = esp_bootloader {
+        let chip: espflash::Chip = chip_name
+            .parse()
+            .map_err(|_| anyhow::anyhow!("failed to parse `{chip_name}` as an ESP chip name"))?;
+        loader.load_espflash_data(&mut file, chip)?
+    } else {
+        loader.load_elf_data(&mut file)?;
+    }
 
     run_flash_download(
         &mut session,

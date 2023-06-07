@@ -29,6 +29,8 @@ pub enum Format {
     Hex,
     /// Marks a file in the [ELF](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format) format.
     Elf,
+    #[cfg(feature = "espflash")]
+    Esp,
 }
 
 impl FromStr for Format {
@@ -159,6 +161,9 @@ pub fn download_file_with_options<P: AsRef<Path>>(
         Format::Bin(options) => loader.load_bin_data(&mut file, options),
         Format::Elf => loader.load_elf_data(&mut file),
         Format::Hex => loader.load_hex_data(&mut file),
+        #[cfg(feature = "espflash")]
+        // FIXME: don't hardcode the chip
+        Format::Esp => loader.load_espflash_data(&mut file, espflash::Chip::Esp32c3),
     }?;
 
     loader

@@ -188,6 +188,35 @@ impl FlashLoader {
         Ok(())
     }
 
+    /// TODO: doc
+    #[cfg(feature = "espflash")]
+    pub fn load_espflash_data<T: Read>(
+        &mut self,
+        file: &mut T,
+        chip: espflash::Chip,
+    ) -> Result<(), FileDownloadError> {
+        let mut elf_buffer = Vec::new();
+        file.read_to_end(&mut elf_buffer)?;
+        let image = espflash::elf::ElfFirmwareImage::try_from(&elf_buffer[..]).unwrap(); // FIXME
+        let image = chip
+            .get_flash_image(
+                &image,
+                None, // bootloader
+                None, // partition table
+                Some(espflash::image_format::ImageFormatId::Bootloader),
+                None, // chip revision
+                None, // flash mode
+                None, // flash size
+                None, // flash freq
+            )
+            .unwrap(); // FIXME
+
+        for section in image.flash_segments() {
+            self.add_data(section.addr.into(), &section.data)?;
+        }
+        Ok(())
+    }
+
     /// Writes all the stored data chunks to flash.
     ///
     /// Requires a session with an attached target that has a known flash algorithm.
